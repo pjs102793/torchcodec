@@ -47,7 +47,7 @@ import sys
 from pathlib import Path
 
 import torch
-from setuptools import Extension, setup
+from setuptools import Extension, setup, find_packages
 from setuptools.command.build_ext import build_ext
 
 
@@ -178,11 +178,13 @@ def _write_version_files():
         # the content of `version.txt` plus some suffix like "+cpu" or "+cu112".
         # See
         # https://github.com/pytorch/test-infra/blob/61e6da7a6557152eb9879e461a26ad667c15f0fd/tools/pkg-helpers/pytorch_pkg_helpers/version.py#L113
+        version = version.replace("+cpu", "")
         with open(_ROOT_DIR / "version.txt", "w") as f:
             f.write(f"{version}")
     else:
         with open(_ROOT_DIR / "version.txt") as f:
             version = f.readline().strip()
+        version = version.replace("+cpu", "")
         try:
             sha = (
                 subprocess.check_output(
@@ -203,6 +205,10 @@ def _write_version_files():
 _write_version_files()
 
 setup(
+    name="torchcodec",  # 패키지 이름 명시
+    version="0.1.0",  # 버전 명시
+    package_dir={"": "src"},  # src 경로에서 패키지를 찾도록 설정
+    packages=find_packages(where="src"),  # src 아래의 모든 패키지 검색
     ext_modules=[fake_extension],
     cmdclass={"build_ext": CMakeBuild},
 )
